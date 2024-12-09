@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QProgressBar,
     QStatusBar,
 )
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
 
 class StatusBarLogger(logging.Handler):
@@ -137,12 +137,22 @@ class MainWindow(QMainWindow):
         logging.getLogger().addHandler(log_handler)
         logging.getLogger().setLevel(logging.INFO)
 
+        # Таймер для периодического обновления данных
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.periodic_update_data)  # Таймер с вызовом обновления данных
+        self.timer.start(10000)  # Каждые 10 секунд
+
     def start_loading(self):
         """Запуск загрузки данных"""
         self.progress_bar.setValue(0)
         self.button.setEnabled(False)
         logging.info("Запуск загрузки данных...")
         self.worker.start()  # Запуск фонового потока
+
+    def periodic_update_data(self):
+        """Периодическое обновление данных с сервера"""
+        logging.info("Периодическая проверка обновлений...")
+        self.worker.start()  # Повторно запускаем фоновую задачу для получения и сохранения данных
 
     def update_progress(self, progress):
         """Обновление прогресса"""
